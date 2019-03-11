@@ -22,7 +22,7 @@ const tokenShapes = [
 	}
 ];
 
-const endToken = `(\\s|\\n)+`;
+const space = `(\\s|\\n)+`;
 
 const tokenizer = code => {
 	let tokens = [];
@@ -34,7 +34,7 @@ const tokenizer = code => {
 			return check.test(code);
 		});
 		if (!tokenShape) {
-			const check = new RegExp(endToken);
+			const check = new RegExp(space);
 			if (check.test(code)) {
 				code = code.replace(/^(\s|\n)+/, "");
 				continue;
@@ -60,14 +60,46 @@ const tokenizer = code => {
 };
 
 const parser = tokensArray => {
+	let count = 0;
 	const AST = {
 		type: "Program",
 		statements: []
 	};
 
-	while (tokensArray.length)
-		/* ... */
-		return AST; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
+	let statement;
+
+	while (tokensArray.length && count < 1000) {
+		count++;
+		let token = tokensArray.shift();
+		switch (token.type) {
+			case "VariableDeclaration": {
+				const identifer = tokensArray.shift();
+				// remove our dumb variableAssignment token
+				tokensArray.shift();
+				statement = {
+					tokensArray
+				};
+				// the next statement is used as the declaration
+				break;
+			}
+			case "BinaryOperator": {
+				// get previous token
+				// assign previous token to left
+				// assign next statement to right
+				break;
+			}
+			case "Number": {
+				break;
+			}
+			case "Identifier": {
+				break;
+			}
+			default:
+				throw new Error(`unexpected token ${JSON.stringify(token)}`);
+		}
+	}
+	/* ... */
+	return AST; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
 };
 
 const transformer = AST => {
@@ -88,150 +120,8 @@ const generate = code => {
 	return newCode;
 };
 
-const expect = (value1, value2) => {
-	const string1 = JSON.stringify(value1, undefined, 2);
-	const string2 = JSON.stringify(value2, undefined, 2);
-	if (string1 === string2) {
-		return true;
-	} else {
-		throw new Error(`${string1} is not equal to ${string2}`);
-	}
-};
-
-// TODO we should check for grammar errors and have the tokenizer do something specific so we can test for it
-
-const testTokenising = () => {
-	expect(tokenizer(""), []);
-	expect(tokenizer("let a = 3 "), [
-		{ type: "VariableDeclaration" },
-		{ type: "Identifier", value: "a" },
-		{ type: "VariableAssignment" },
-		{ type: "Number", value: "3" }
-	]);
-	expect(tokenizer("let a = 33 + 44 "), [
-		{ type: "VariableDeclaration" },
-		{ type: "Identifier", value: "a" },
-		{ type: "VariableAssignment" },
-		{ type: "Number", value: "33" },
-		{ type: "BinaryOperator", value: "+" },
-		{ type: "Number", value: "44" }
-	]);
-	expect(tokenizer("5 + 3 "), [
-		{ type: "Number", value: "5" },
-		{ type: "BinaryOperator", value: "+" },
-		{ type: "Number", value: "3" }
-	]);
-	expect(
-		tokenizer(`let a = 5
-let b = a`),
-		[
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
-			{ type: "Number", value: "5" },
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
-			{ type: "Identifier", value: "a" }
-		]
-	);
-	expect(tokenizer("let supercallifragellisticexpialedocious = 5"), [
-		{ type: "VariableDeclaration" },
-		{ type: "Identifier", value: "supercallifragellisticexpialedocious" },
-		{ type: "VariableAssignment" },
-		{ type: "Number", value: "5" }
-	]);
-	expect(
-		tokenizer(`let a = 33
-let b = 5`),
-		[
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
-			{ type: "Number", value: "33" },
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
-			{ type: "Number", value: "5" }
-		]
-	);
-	expect(
-		tokenizer(`let a = 33
-let b = 5
-a + b`),
-		[
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
-			{ type: "Number", value: "33" },
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
-			{ type: "Number", value: "5" },
-			{ type: "Identifier", value: "a" },
-			{ type: "BinaryOperator", value: "+" },
-			{ type: "Identifier", value: "b" }
-		]
-	);
-	expect(
-		tokenizer(`let a = 33
-let b = 5
-let c = a + b`),
-		[
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
-			{ type: "Number", value: "33" },
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
-			{ type: "Number", value: "5" },
-			{ type: "VariableDeclaration" },
-			{ type: "Identifier", value: "c" },
-			{ type: "VariableAssignment" },
-			{ type: "Identifier", value: "a" },
-			{ type: "BinaryOperator", value: "+" },
-			{ type: "Identifier", value: "b" }
-		]
-	);
-};
-// testTokenising()
-
-const letAEqualFive = [
-	{ type: "VariableDeclaration" },
-	{ type: "Identifier", value: "a" },
-	{ type: "VariableAssignment" },
-	{ type: "Number", value: "5" }
-];
-
-const BinaryInVariableDeclarator = [
-	{ type: "VariableDeclaration" },
-	{ type: "Identifier", value: "a" },
-	{ type: "VariableAssignment" },
-	{ type: "Number", value: "5" },
-	{ tye: "BinaryExpression", value: "+" },
-	{ tye: "Number", value: "5" }
-];
-
-// Other fun one: const a = 3 + 4 + 6 - shows nesting
-
-const testParser = () => {
-	expect(parser([]), { type: "Program", statements: [] });
-	expect(parser(letAEqualFive), {
-		type: "Program",
-		statements: [
-			{
-				type: "VariableDeclaration",
-				declaration: {
-					id: { type: "Identifier", value: "a" },
-					initialValue: {
-						type: "Number",
-						value: "5"
-					}
-				}
-			}
-		]
-	});
-};
-
-testParser();
+module.exports = generate;
+module.exports.tokenizer = tokenizer;
+module.exports.parser = parser;
+module.exports.transformer = transformer;
+module.exports.generator = generator;
