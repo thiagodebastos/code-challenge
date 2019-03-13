@@ -19,10 +19,11 @@ const tokenShapes = [
 		type: "BinaryOperator",
 		matchPattern: `(\\+|-|\\*)`,
 		getValue: code => code
-	}
+	},
+	{ type: "LineBreak", matchPattern: `\\n+` }
 ];
 
-const space = `(\\s|\\n)+`;
+const space = `\\s+`;
 
 const tokenizer = code => {
 	let tokens = [];
@@ -59,6 +60,35 @@ const tokenizer = code => {
 	return tokens; // an array of tokens in processed order
 };
 
+const parseExpression = tokens => {
+	if (tokens.length === 1) return tokens.shift();
+
+	const left = tokens.shift();
+	const operator = tokens.shift();
+	const right = parseExpression(tokens);
+	if (operator.type === "BinaryOperator") {
+		return { type: "BinaryExpression", operator: operator.value, left, right };
+	} else if (operator.type === "VariableAssignment") {
+		return {
+			type: "VariableAssignment",
+			id: left,
+			updatedValue: right
+		};
+	} else {
+		throw new Error(
+			`Could not parse expression for operator of type ${operator.type}`
+		);
+	}
+};
+
+const getTokensBeforeBreak = tokens => {
+	let expressionTokens = [];
+	while (tokens[0] && tokens[0].type !== "LineBreak") {
+		expressionTokens.push(tokens.shift());
+	}
+	return expressionTokens;
+};
+
 const parser = tokensArray => {
 	let count = 0;
 	const AST = {
@@ -73,25 +103,53 @@ const parser = tokensArray => {
 		let token = tokensArray.shift();
 		switch (token.type) {
 			case "VariableDeclaration": {
-				const identifer = tokensArray.shift();
+				const id = tokensArray.shift();
 				// remove our dumb variableAssignment token
 				tokensArray.shift();
-				statement = {
-					tokensArray
-				};
-				// the next statement is used as the declaration
+
+				const lbIndex = tokensArray.findIndex(
+					({ type }) => type === "LineBreak"
+				);
+				let expressionTokens = getTokensBeforeBreak(tokensArray);
+				const initialValue = parseExpression(expressionTokens);
+				AST.statements.push({
+					type: "VariableDeclaration",
+					declaration: {
+						id,
+						initialValue
+					}
+				});
 				break;
 			}
 			case "BinaryOperator": {
-				// get previous token
-				// assign previous token to left
-				// assign next statement to right
+				let expressionTokens = getTokensBeforeBreak(tokensArray);
+				AST.statements.push(parseExpression(expressionTokens));
 				break;
 			}
 			case "Number": {
+				if (tokensArray[0] && tokensArray[0].type === "BinaryOperator") {
+					let expressionTokens = getTokensBeforeBreak(tokensArray);
+					AST.statements.push(parseExpression([token, ...expressionTokens]));
+				} else {
+					statements.push(token);
+				}
 				break;
 			}
 			case "Identifier": {
+				if (tokensArray[0] && tokensArray[0].type === "BinaryOperator") {
+					let expressionTokens = getTokensBeforeBreak(tokensArray);
+					AST.statements.push(parseExpression([token, ...expressionTokens]));
+				} else if (
+					tokensArray[0] &&
+					tokensArray[0].type === "VariableAssignment"
+				) {
+					// In this instance, we need to add a VariableAssignment node
+				} else {
+					statements.push(token);
+				}
+				break;
+			}
+			case "LineBreak": {
 				break;
 			}
 			default:

@@ -7,7 +7,7 @@ describe("tokenizer", () => {
 		expect(tokenizer("")).toEqual([]);
 	});
 	it("should tokenize a simple assignment", () => {
-		expect(tokenizer("let a = 3 ")).toEqual([
+		expect(tokenizer("let a = 3")).toEqual([
 			{ type: "VariableDeclaration" },
 			{ type: "Identifier", value: "a" },
 			{ type: "VariableAssignment" },
@@ -15,7 +15,7 @@ describe("tokenizer", () => {
 		]);
 	});
 	it("should tokenize a more complicated assignment", () => {
-		expect(tokenizer("let a = 33 + 44 ")).toEqual([
+		expect(tokenizer("let a = 33 + 44")).toEqual([
 			{ type: "VariableDeclaration" },
 			{ type: "Identifier", value: "a" },
 			{ type: "VariableAssignment" },
@@ -39,6 +39,7 @@ describe("tokenizer", () => {
 			{ type: "Identifier", value: "a" },
 			{ type: "VariableAssignment" },
 			{ type: "Number", value: "5" },
+			{ type: "LineBreak" },
 			{ type: "VariableDeclaration" },
 			{ type: "Identifier", value: "b" },
 			{ type: "VariableAssignment" },
@@ -62,6 +63,7 @@ describe("tokenizer", () => {
 			{ type: "Identifier", value: "a" },
 			{ type: "VariableAssignment" },
 			{ type: "Number", value: "33" },
+			{ type: "LineBreak" },
 			{ type: "VariableDeclaration" },
 			{ type: "Identifier", value: "b" },
 			{ type: "VariableAssignment" },
@@ -78,10 +80,12 @@ describe("tokenizer", () => {
 			{ type: "Identifier", value: "a" },
 			{ type: "VariableAssignment" },
 			{ type: "Number", value: "33" },
+			{ type: "LineBreak" },
 			{ type: "VariableDeclaration" },
 			{ type: "Identifier", value: "b" },
 			{ type: "VariableAssignment" },
 			{ type: "Number", value: "5" },
+			{ type: "LineBreak" },
 			{ type: "Identifier", value: "a" },
 			{ type: "BinaryOperator", value: "+" },
 			{ type: "Identifier", value: "b" }
@@ -97,10 +101,12 @@ describe("tokenizer", () => {
 			{ type: "Identifier", value: "a" },
 			{ type: "VariableAssignment" },
 			{ type: "Number", value: "33" },
+			{ type: "LineBreak" },
 			{ type: "VariableDeclaration" },
 			{ type: "Identifier", value: "b" },
 			{ type: "VariableAssignment" },
 			{ type: "Number", value: "5" },
+			{ type: "LineBreak" },
 			{ type: "VariableDeclaration" },
 			{ type: "Identifier", value: "c" },
 			{ type: "VariableAssignment" },
@@ -157,22 +163,113 @@ describe("parser", () => {
 			]
 		});
 	});
+	it("should handle variable variable assignment with an operator", () => {
+		const tokens = [
+			{ type: "VariableDeclaration" },
+			{ type: "Identifier", value: "a" },
+			{ type: "VariableAssignment" },
+			{ type: "Number", value: "5" },
+			{ type: "BinaryOperator", value: "+" },
+			{ type: "Number", value: "4" }
+		];
+
+		expect(parser(tokens)).toEqual({
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					declaration: {
+						id: { type: "Identifier", value: "a" },
+						initialValue: {
+							type: "BinaryExpression",
+							operator: "+",
+							left: { type: "Number", value: "5" },
+							right: { type: "Number", value: "4" }
+						}
+					}
+				}
+			]
+		});
+	});
+	it("should handle multiple expressions in a line", () => {
+		const tokens = [
+			{ type: "VariableDeclaration" },
+			{ type: "Identifier", value: "a" },
+			{ type: "VariableAssignment" },
+			{ type: "Number", value: "5" },
+			{ type: "BinaryOperator", value: "+" },
+			{ type: "Number", value: "4" },
+			{ type: "BinaryOperator", value: "+" },
+			{ type: "Number", value: "3" },
+			{ type: "BinaryOperator", value: "+" },
+			{ type: "Number", value: "2" }
+		];
+
+		expect(parser(tokens)).toEqual({
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					declaration: {
+						id: { type: "Identifier", value: "a" },
+						initialValue: {
+							type: "BinaryExpression",
+							operator: "+",
+							left: { type: "Number", value: "5" },
+							right: {
+								type: "BinaryExpression",
+								operator: "+",
+								left: { type: "Number", value: "4" },
+								right: {
+									type: "BinaryExpression",
+									operator: "+",
+									left: { type: "Number", value: "3" },
+									right: { type: "Number", value: "2" }
+								}
+							}
+						}
+					}
+				}
+			]
+		});
+	});
+	it("should handle variable multiple expressions", () => {
+		const tokens = [
+			{ type: "VariableDeclaration" },
+			{ type: "Identifier", value: "a" },
+			{ type: "VariableAssignment" },
+			{ type: "Number", value: "5" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclaration" },
+			{ type: "Identifier", value: "b" },
+			{ type: "VariableAssignment" },
+			{ type: "Number", value: "6" },
+			{ type: "LineBreak" }
+		];
+		expect(parser(tokens)).toEqual({
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					declaration: {
+						id: { type: "Identifier", value: "a" },
+						initialValue: {
+							type: "Number",
+							value: "5"
+						}
+					}
+				},
+				{
+					type: "VariableDeclaration",
+					declaration: {
+						id: { type: "Identifier", value: "b" },
+						initialValue: {
+							type: "Number",
+							value: "6"
+						}
+					}
+				}
+			]
+		});
+	});
 });
-
-const letAEqualFive = [
-	{ type: "VariableDeclaration" },
-	{ type: "Identifier", value: "a" },
-	{ type: "VariableAssignment" },
-	{ type: "Number", value: "5" }
-];
-
-const BinaryInVariableDeclarator = [
-	{ type: "VariableDeclaration" },
-	{ type: "Identifier", value: "a" },
-	{ type: "VariableAssignment" },
-	{ type: "Number", value: "5" },
-	{ tye: "BinaryOperator", value: "+" },
-	{ tye: "Number", value: "5" }
-];
-
-const testParser = () => {};
