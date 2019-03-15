@@ -1,4 +1,5 @@
-const { tokenizer, parser, transformer, generator } = require("./cheats");
+const generate = require("./just-the-basics");
+const { tokenizer, parser, transformer, generator } = generate;
 
 // Other fun one: const a = 3 + 4 + 6 - shows nesting
 
@@ -271,5 +272,86 @@ describe("parser", () => {
 				}
 			]
 		});
+	});
+});
+
+describe("generator", () => {
+	it("should convert an empty program", () => {
+		const AST = {
+			type: "Program",
+			statements: []
+		};
+
+		expect(generator(AST)).toEqual("");
+	});
+	it("should convert an AST of a simple variable", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					declaration: {
+						id: { type: "Identifier", value: "a" },
+						initialValue: {
+							type: "Number",
+							value: "5"
+						}
+					}
+				}
+			]
+		};
+
+		expect(generator(AST)).toEqual("let a = 5");
+	});
+	it("should convert an AST of a simple expression", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "BinaryExpression",
+					operator: "+",
+					left: { type: "Number", value: "5" },
+					right: { type: "Number", value: "4" }
+				}
+			]
+		};
+
+		expect(generator(AST)).toEqual("5 + 4");
+	});
+	it("should convert an AST of a variable declaration with a binary operator", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					declaration: {
+						id: { type: "Identifier", value: "a" },
+						initialValue: {
+							type: "BinaryExpression",
+							operator: "+",
+							left: { type: "Number", value: "5" },
+							right: { type: "Number", value: "4" }
+						}
+					}
+				}
+			]
+		};
+
+		expect(generator(AST)).toEqual("let a = 5 + 4");
+	});
+});
+
+describe("transformer", () => {
+	it("should be a thing that exists because this is what makes this fun");
+});
+
+describe("generate", () => {
+	it("should pass things straight through", () => {
+		expect(generate("let a = 5")).toEqual("let a = 5");
+		expect(generate("5 - 4")).toEqual("5 - 4");
+		expect(generate("let ascii = 5 - 4")).toEqual("let ascii = 5 - 4");
+		expect(generate("let conjoined = 5 + 4 - 3 * 2")).toEqual(
+			"let conjoined = 5 + 4 - 3 * 2"
+		);
 	});
 });

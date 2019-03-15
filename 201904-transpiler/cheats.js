@@ -160,14 +160,55 @@ const parser = tokensArray => {
 	return AST; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
 };
 
-const transformer = AST => {
+const transformer = (AST, transformations) => {
 	/* ... */
-	return {}; // a modified AST
+	return AST; // a modified AST
+};
+
+const generateExpression = expression => {
+	switch (expression.type) {
+		case "Number": {
+			return expression.value;
+		}
+		case "BinaryExpression": {
+			return "";
+		}
+		default: {
+			throw new Error(
+				`unknown expression type in generation ${expression.type}`
+			);
+		}
+	}
+};
+
+const generateStatement = statement => {
+	switch (statement.type) {
+		case "Number": {
+			return statement.value;
+		}
+		case "VariableDeclaration": {
+			return `let ${statement.declaration.id.value} = ${generateStatement(
+				statement.declaration.initialValue
+			)}`;
+		}
+		case "BinaryExpression": {
+			return `${generateStatement(statement.left)} ${
+				statement.operator
+			} ${generateStatement(statement.right)}`;
+		}
+		default: {
+			throw new Error(`unknown statement type in generation ${statement.type}`);
+		}
+	}
 };
 
 const generator = AST => {
-	/* ... */
-	return ``; // a string that is code
+	let file = "";
+	if (AST.type === "Program") {
+		const statementString = AST.statements.map(generateStatement).join("\n");
+		file += statementString;
+	}
+	return file; // a string that is code
 };
 
 const generate = code => {
