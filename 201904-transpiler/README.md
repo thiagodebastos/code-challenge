@@ -8,64 +8,64 @@ npm as the way to submit. We want to give everyone a chance to
 practice working on and publishing a package, which this will be
 a good way to learn.
 
-## Setting up and publishing your package
+## Your Mission, if you choose to accept it:
 
-### package.json
+Expand out the `transpiler.example.js`'s functions to pass the test suite found in `transpiler.tests.js`.
 
-```json
-{
-  "name": "@tm-code-challenge/YOUR_NAME_HERE-transpiler",
-  "version": "1.0.0"
-}
+To do this, you will need to understand the steps that a transpiler goes through as it does its work.
+
+## How does a transpiler work?
+
+A transpiler works by going through several different steps, designed at breaking the raw text version
+of your code, and then reconfiguring it. The conversion steps look like:
+
+```
+tokenizer(raw_code) => tokens_array
+parser(tokens_array) => abstract_syntax_tree (AST)
+transformer(AST) => modified_AST
+generator(AST) => code
 ```
 
-### Main file
+You can write your tests in any order, however it is likely helpful to understand tokens before you write your parser.
+
+### What is a token?
+
+A token is an object that represents a discrete unit in your code, such as:
 
 ```js
-// in the main file of your package
-
-const tokenizer = (code) => {
-  /* ... */
-  return [] // an array of tokens in processed order
-}
-
-const parser = (tokensArray) => {
-  /* ... */
-  return {} // an object which is our AST - we can actually refer back to the tree traversal stuff we did
-}
-
-const transformer = (AST) => {
-  /* ... */
-  return {} // a modified AST
-}
-
-const generator = (AST) => {
-  /* ... */
-  return `` // a string that is code
-}
-
-const generate = (code) => {
-    const tokens = tokenizer(code);
-    const AST = parser(tokens);
-    const transformedAST = transformer(AST);
-    const newCode = generator(transformedAST);
-    return newCode;
-}
-
-module.exports = generate;
-module.exports.tokenizer = tokenizer;
-module.exports.parser = parser;
-module.exports.transformer = transformer;
-module.exports.generator = generator;
+{ type: "VariableDeclaration" }
 ```
 
-### Symlinking
+Every token has a type. This is used by later processes to decide what to do with the token. In addition, some
+tokens have values, which are a string, and hold some information from the source code, for example:
 
-### Testing
+```js
+{ type: "Number", value: "7" }
+```
 
-### Publishing
+Each challenge explains the tokens that it needs.
 
-> NOTE We are assuming you are part of the Thinkmill org on github, and so can publish a package under a scope. If you are not, you may need to publish an unscoped package
+### What is an AST?
+
+An Abstract Syntax Tree (AST) is a tree representation of your code, that goes further than tokens as it contains
+informations about how tokens relate to one another.
+
+This can be seen from something such as this variable declaration in an AST:
+
+```js
+{
+  type: "VariableDeclaration",
+  declaration: {
+    id: { type: "Identifier", value: "a" },
+    initialValue: {
+      type: "Number",
+      value: "5"
+    }
+  }
+}
+```
+
+An AST is built from tokens, not code directly, however can be used to convert back into code.
 
 ## Challenge 1 - initial set of tokens
 
@@ -121,10 +121,3 @@ Tokens you will need to be able to recognise + create:
 ### Other tokens
 `LineBreak`: The `\n` symbol. A linebreak is an expression terminator.
 `VariableDeclaration`: For this challenge, all identifiers are `let`.
-
-## Terms
-
-### Token
-### AST
-### Type
-### Statement
