@@ -1,4 +1,4 @@
-const generate = require("./just-the-basics");
+const generate = require("./transpiler.example");
 const { tokenizer, parser, transformer, generator } = generate;
 
 // Other fun one: const a = 3 + 4 + 6 - shows nesting
@@ -342,7 +342,7 @@ describe("generator", () => {
 });
 
 describe("transformer", () => {
-	it("should be a thing that exists because this is what makes this fun");
+	it("should be a thing that exists because this is what makes this fun", () => {});
 });
 
 describe("generate", () => {
