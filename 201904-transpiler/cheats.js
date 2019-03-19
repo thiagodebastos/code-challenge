@@ -2,6 +2,10 @@ let counter = 0;
 
 const tokenShapes = [
 	{
+		type: "DefaultExport",
+		matchPattern: `export default`
+	},
+	{
 		type: "VariableDeclaration",
 		matchPattern: "let[^a-zA-Z0-9]"
 	},
@@ -72,7 +76,7 @@ const parseExpression = tokens => {
 		return {
 			type: "VariableAssignment",
 			id: left,
-			updatedValue: right
+			value: right
 		};
 	} else {
 		throw new Error(
@@ -106,18 +110,12 @@ const parser = tokensArray => {
 				const id = tokensArray.shift();
 				// remove our dumb variableAssignment token
 				tokensArray.shift();
-
-				const lbIndex = tokensArray.findIndex(
-					({ type }) => type === "LineBreak"
-				);
 				let expressionTokens = getTokensBeforeBreak(tokensArray);
-				const initialValue = parseExpression(expressionTokens);
+				const value = parseExpression(expressionTokens);
 				AST.statements.push({
 					type: "VariableDeclaration",
-					declaration: {
-						id,
-						initialValue
-					}
+					id,
+					value
 				});
 				break;
 			}
@@ -131,7 +129,7 @@ const parser = tokensArray => {
 					let expressionTokens = getTokensBeforeBreak(tokensArray);
 					AST.statements.push(parseExpression([token, ...expressionTokens]));
 				} else {
-					statements.push(token);
+					AST.statements.push(token);
 				}
 				break;
 			}
@@ -143,10 +141,20 @@ const parser = tokensArray => {
 					tokensArray[0] &&
 					tokensArray[0].type === "VariableAssignment"
 				) {
+					let expressionTokens = getTokensBeforeBreak(tokensArray);
+					AST.statements.push(parseExpression([token, ...expressionTokens]));
 					// In this instance, we need to add a VariableAssignment node
 				} else {
-					statements.push(token);
+					AST.statements.push(token);
 				}
+				break;
+			}
+			case "DefaultExport": {
+				let expressionTokens = getTokensBeforeBreak(tokensArray);
+				AST.statements.push({
+					type: "DefaultExport",
+					value: parseExpression(expressionTokens)
+				});
 				break;
 			}
 			case "LineBreak": {
@@ -160,9 +168,55 @@ const parser = tokensArray => {
 	return AST; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
 };
 
-const transformer = (AST, transformations) => {
-	/* ... */
-	return AST; // a modified AST
+const identifierUsed = (identifier, statements) =>
+	statements
+		.map(statement => identifierUsedInNode(identifier, statement))
+		.find(i => i === true);
+
+identifierUsedInNode = (identifier, node) => {
+	switch (node.type) {
+		case "Identifier": {
+			return node.value === identifier;
+		}
+		case "VariableDeclaration": {
+			return identifierUsedInNode(identifier, node.value);
+		}
+		case "BinaryExpression": {
+			return (
+				identifierUsedInNode(identifier, node.left) ||
+				identifierUsedInNode(identifier, node.right)
+			);
+		}
+		case "DefaultExport": {
+			return identifierUsedInNode(identifier, node.value);
+		}
+		case "Number": {
+			return false;
+		}
+		default: {
+			throw new Error(
+				`forgot to handle token in variable checking: ${node.type}`
+			);
+		}
+	}
+};
+
+const transformer = AST => {
+	const convertedStatements = [];
+	const unconvertedStatements = [...AST.statements];
+
+	while (unconvertedStatements.length) {
+		let statement = unconvertedStatements.shift();
+
+		if (
+			statement.type !== "VariableDeclaration" ||
+			identifierUsed(statement.id.value, unconvertedStatements)
+		) {
+			convertedStatements.push(statement);
+		}
+	}
+
+	return { ...AST, statements: convertedStatements }; // a modified AST
 };
 
 const generateExpression = expression => {
@@ -186,15 +240,21 @@ const generateStatement = statement => {
 		case "Number": {
 			return statement.value;
 		}
+		case "Identifier": {
+			return statement.value;
+		}
 		case "VariableDeclaration": {
-			return `let ${statement.declaration.id.value} = ${generateStatement(
-				statement.declaration.initialValue
+			return `let ${statement.id.value} = ${generateStatement(
+				statement.value
 			)}`;
 		}
 		case "BinaryExpression": {
 			return `${generateStatement(statement.left)} ${
 				statement.operator
 			} ${generateStatement(statement.right)}`;
+		}
+		case "DefaultExport": {
+			return `export default ${generateStatement(statement.value)}`;
 		}
 		default: {
 			throw new Error(`unknown statement type in generation ${statement.type}`);
