@@ -3,7 +3,7 @@ let counter = 0;
 const tokenShapes = [
 	{
 		type: "VariableDeclaration",
-		matchPattern: "let"
+		matchPattern: "let[^a-zA-Z0-9]"
 	},
 	{
 		type: "Identifier",
