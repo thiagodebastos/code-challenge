@@ -8,9 +8,15 @@ To do this, you will need to understand the steps that a transpiler goes through
 
 Expand out the `transpiler.example.js`'s functions to pass the test suite found in `transpiler.tests.js`.
 
-You can write your tests in any order, however it is likely helpful to understand tokens before you write your parser.
+You can write your functions in any order, however it is likely helpful to understand tokens before you write your parser.
 
 You are not allowed to use any node modules (other than jest).
+
+## To get started
+
+Read the Readme, then open up the `transpiler.example.js` file, and fill in the missing functions.
+
+You can run `yarn jest --watch` in this folder to test your code.
 
 ## What is a Transpiler?
 

@@ -178,6 +178,12 @@ identifierUsedInNode = (identifier, node) => {
 		case "VariableDeclaration": {
 			return identifierUsedInNode(identifier, node.value);
 		}
+		case "VariableAssignment": {
+			return (
+				identifierUsedInNode(identifier, node.id) ||
+				identifierUsedInNode(identifier, node.value)
+			);
+		}
 		case "BinaryExpression": {
 			return (
 				identifierUsedInNode(identifier, node.left) ||
@@ -252,6 +258,11 @@ const generateStatement = statement => {
 		}
 		case "DefaultExportExpression": {
 			return `export default ${generateStatement(statement.value)}`;
+		}
+		case "VariableAssignment": {
+			return `${generateStatement(statement.id)} = ${generateStatement(
+				statement.value
+			)}`;
 		}
 		default: {
 			throw new Error(`unknown statement type in generation ${statement.type}`);

@@ -369,6 +369,197 @@ describe("parser", () => {
 	});
 });
 
+describe("transformer", () => {
+	it("should remove an unused variable", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "5"
+					}
+				},
+				{
+					type: "DefaultExportExpression",
+					value: {
+						type: "Number",
+						value: "100"
+					}
+				}
+			]
+		};
+
+		expect(transformer(AST)).toEqual({
+			type: "Program",
+			statements: [
+				{
+					type: "DefaultExportExpression",
+					value: {
+						type: "Number",
+						value: "100"
+					}
+				}
+			]
+		});
+	});
+	it("should remove two unused variable", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "5"
+					}
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "b" },
+					value: {
+						type: "Number",
+						value: "55"
+					}
+				},
+				{
+					type: "DefaultExportExpression",
+					value: {
+						type: "Number",
+						value: "100"
+					}
+				}
+			]
+		};
+
+		expect(transformer(AST)).toEqual({
+			type: "Program",
+			statements: [
+				{
+					type: "DefaultExportExpression",
+					value: {
+						type: "Number",
+						value: "100"
+					}
+				}
+			]
+		});
+	});
+	it("should not remove a variable used as an export", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "5"
+					}
+				},
+				{
+					type: "DefaultExportExpression",
+					value: {
+						type: "Identifier",
+						value: "a"
+					}
+				}
+			]
+		};
+
+		expect(transformer(AST)).toEqual(AST);
+	});
+	it("should not remove a variable used in a binaryExpression", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "5"
+					}
+				},
+				{
+					type: "BinaryExpression",
+					operator: "-",
+					left: {
+						type: "Identifier",
+						value: "a"
+					},
+					right: {
+						type: "Number",
+						value: "16"
+					}
+				}
+			]
+		};
+
+		expect(transformer(AST)).toEqual(AST);
+	});
+	it("should not remove a variable that is reassigned", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "5"
+					}
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "b" },
+					value: {
+						type: "Identifier",
+						value: "a"
+					}
+				},
+				{
+					type: "DefaultExportExpression",
+					value: {
+						type: "Identifier",
+						value: "b"
+					}
+				}
+			]
+		};
+
+		expect(transformer(AST)).toEqual(AST);
+	});
+	it("should not remove is used in a variable assignment", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "5"
+					}
+				},
+				{
+					type: "VariableAssignment",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "66"
+					}
+				}
+			]
+		};
+
+		expect(transformer(AST)).toEqual(AST);
+	});
+});
+
 describe("generator", () => {
 	it("should convert an empty program", () => {
 		const AST = {
@@ -429,19 +620,64 @@ describe("generator", () => {
 
 		expect(generator(AST)).toEqual("let a = 5 + 4");
 	});
-});
+	it("should convert an AST with values as expressions", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{ type: "Number", value: "5" },
+				{ type: "Number", value: "4" }
+			]
+		};
 
-describe("transformer", () => {
-	it("should be a thing that exists because this is what makes this fun", () => {});
-});
+		expect(generator(AST)).toEqual(`5
+4`);
+	});
+	it("should convert an AST with a default export", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Number", value: "333" }
+				}
+			]
+		};
 
-describe("generate", () => {});
+		expect(generator(AST)).toEqual("export default 333");
+	});
+	it("should convert an AST with variable assignment", () => {
+		const AST = {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "5"
+					}
+				},
+				{
+					type: "VariableAssignment",
+					id: { type: "Identifier", value: "a" },
+					value: {
+						type: "Number",
+						value: "22"
+					}
+				}
+			]
+		};
+
+		expect(generator(AST)).toEqual(`let a = 5
+a = 22`);
+	});
+});
 
 const fullTransformSnippets = [
 	{
 		name: "simple export statement",
 		code: `let a = 5
-	export default a`,
+export default a`,
 		tokens: [
 			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
@@ -1203,21 +1439,6 @@ let h = f
 let z = a * a * h
 export default z`
 	}
-];
-
-const fullTransformSnippetsLies = [
-	`let a = 1
-let b = a
-let c = b
-let d = c
-let e = d
-let f = e
-let h = f
-let i = f
-let j = 9
-let k = 10
-let z = a * a * h
-export default z`
 ];
 
 describe("Integrationish Tests", () => {
