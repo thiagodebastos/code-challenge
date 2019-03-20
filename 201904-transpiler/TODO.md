@@ -5,10 +5,3 @@ LET'S MAKE A LIST
 3. For the tokenizer, we should define exactly what the token rules are, and what is valid/invalid.
 4. For the parser, document what kinds of things exist within it.
 4. get the README to the point where someone could solve the problem without ever having looked at the tests.
-
-
-Helpful links:
-
-That medium article
-AST explorer
-The Super Tiny Compiler

@@ -2,13 +2,19 @@
 
 This challenge is going to see us build our own compiler (transpiler), and learn the parts that make up this kind of software.
 
+To do this, you will need to understand the steps that a transpiler goes through as it does its work.
+
+You are not allowed to use any node modules (other than jest).
+
 ## Your Mission, if you choose to accept it:
 
 Expand out the `transpiler.example.js`'s functions to pass the test suite found in `transpiler.tests.js`.
 
 To do this, you will need to understand the steps that a transpiler goes through as it does its work.
 
-## What is a transpiler?
+You can write your tests in any order, however it is likely helpful to understand tokens before you write your parser.
+
+## What is a Transpiler?
 
 A transpiler is software that takes in code from one language, and outputs it in the same language, converts it to an Abstract Syntax Tree, and then converts it back to the same language. Tranpilers are useful to perform transformations on code without doing a full language switch. For us JS developers, babel and everything we get it to do is why transpilers matter to us.
 
@@ -29,7 +35,7 @@ generator(AST) => code
 A token is an object that represents a discrete unit in your code, such as:
 
 ```js
-{ type: "VariableDeclaration" }
+{ type: "LineBreak" }
 ```
 
 Every token has a type. This is used by later processes to decide what to do with the token. In addition, some
@@ -51,12 +57,10 @@ This can be seen from something such as this variable declaration in an AST:
 ```js
 {
   type: "VariableDeclaration",
-  declaration: {
-    id: { type: "Identifier", value: "a" },
-    initialValue: {
-      type: "Number",
-      value: "5"
-    }
+  id: { type: "Identifier", value: "a" },
+  initialValue: {
+    type: "Number",
+    value: "5"
   }
 }
 ```
@@ -115,96 +119,26 @@ Tokens you will need to be able to recognise + create:
 
 ### Other tokens
 `LineBreak`: The `\n` symbol. A linebreak is an expression terminator.
-`VariableDeclaration`: For this challenge, all variable declarations are `let`. This token may only appear at the beginning of a statement, and must be preceded by both an `Identifier` and a `VariableAssignment` token.
+`VariableDeclaration`: For this challenge, all identifiers are `let`.
 
-### Parts of our AST
+## Formal grammar definition
 
-To make our lives simpler, we are declaring our AST is always a program, and will have the minimal shape of:
+`VariableDeclarator`:: `let`
+`Identifier`:: alphabetic characters
+`Number`:: numeric characters
+`DefaultExport`:: `export default`
+`VariableAssignmentOperator`:: `=`
+`BinaryOperator`:: `+` | `-` | `*`
+`LineBreak`:: `\n`
+`VariableDeclaration`:: VariableDeclarator : Identifier : OperationalExpression
+`OperationalExpression`:: Value | BinaryExpression
+`Value`:: Number | Identifier
+`BinaryExpression`:: OperationalExpression : BinaryOperator : Value
+`DefaultExportExpression`:: DefaultExport : OperationalExpression
+`VariableAssignment`:: Identifer : VariableAssignmentOperator : OperationalExpression
 
-```js
-{
-  type: "Program",
-  statements: [],
-}
-```
+## Other Resources
 
-Each line of our program can be translated to a single statement, and added to the statements array.
-
-A statement can do one of three things:
-1. Declare a new variable (ex: `let a = 5`)
-2. Reassign a variable (ex: `a = 1`)
-3. Perform a basic mathematical operation (ex: `5 + 2`, `4 - 1`)
-
-Each statement is represented by a single type.
-
-Each of the above have their own type within the AST, which are:
-
-#### VariableDeclaration
-
-```js
-{
-  type: "VariableDeclaration",
-  declaration: {
-    id,
-    initialValue
-  }
-}
-```
-
-The id is always an identifier token.
-The initialValue may be any non-assignemnt expression.
-
-#### VariableAssignment
-
-```js
-{
-  type: "VariableAssignment",
-  declaration: {
-    id,
-    value
-  }
-}
-```
-
-Very similar to VariableDeclaration, but has a value instead of an initialValue.
-
-#### BinaryExpression
-
-```js
-{
-  type: "BinaryExpression",
-  operator,
-  left,
-  right,
-}
-```
-
-The operator should be one of the three valid operators defined, `+`, `-`, or `*`.
-
-The `left` is always a value.
-
-The `right` may be a value or a BinaryExpression.
-
-
-
-Finally, each full program passed to generate will have an export, which should be the last line of the file, and export any value from the file. This means that:
-
-```js
-let a = 5
-export default a
-```
-
-is a valid file, as is:
-
-```js
-let a = 5
-export default 15
-```
-
-and so is:
-
-```js
-let a = 5
-export default a * 15
-```
-
+- [How to be a compiler](https://medium.com/@kosamari/how-to-be-a-compiler-make-a-compiler-with-javascript-4a8a13d473b4) is a good article on the concepts at play
+- [The AST explorer allows you to examine generated ASTs of code using several different parsers](https://astexplorer.net/)
+- [The Super Tiny Compiler](https://github.com/jamiebuilds/the-super-tiny-compiler) is a similar exercise

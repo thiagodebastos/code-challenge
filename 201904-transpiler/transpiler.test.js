@@ -7,17 +7,17 @@ describe("tokenizer", () => {
 	});
 	it("should tokenize a simple assignment", () => {
 		expect(tokenizer("let a = 3")).toEqual([
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "3" }
 		]);
 	});
 	it("should tokenize a more complicated assignment", () => {
 		expect(tokenizer("let a = 33 + 44")).toEqual([
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "33" },
 			{ type: "BinaryOperator", value: "+" },
 			{ type: "Number", value: "44" }
@@ -34,22 +34,22 @@ describe("tokenizer", () => {
 		const token = `let a = 5
 		let b = a`;
 		expect(tokenizer(token)).toEqual([
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Identifier", value: "a" }
 		]);
 	});
 	it("should tokenize a long variable name", () => {
 		expect(tokenizer("let supercallifragellisticexpialedocious = 5")).toEqual([
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "supercallifragellisticexpialedocious" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" }
 		]);
 	});
@@ -58,14 +58,14 @@ describe("tokenizer", () => {
 		let b = 5`;
 
 		expect(tokenizer(token)).toEqual([
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "33" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" }
 		]);
 	});
@@ -75,14 +75,14 @@ describe("tokenizer", () => {
 		a + b`;
 
 		expect(tokenizer(token)).toEqual([
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "33" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" },
 			{ type: "LineBreak" },
 			{ type: "Identifier", value: "a" },
@@ -95,13 +95,13 @@ describe("tokenizer", () => {
 		a = 13`;
 
 		expect(tokenizer(token)).toEqual([
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "33" },
 			{ type: "LineBreak" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "13" }
 		]);
 	});
@@ -111,19 +111,19 @@ describe("tokenizer", () => {
 		let c = a + b`;
 
 		expect(tokenizer(token)).toEqual([
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "33" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "c" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Identifier", value: "a" },
 			{ type: "BinaryOperator", value: "+" },
 			{ type: "Identifier", value: "b" }
@@ -143,9 +143,9 @@ describe("parser", () => {
 	});
 	it("should parse a simple variable declaration", () => {
 		const tokens = [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" }
 		];
 		expect(parser(tokens)).toEqual({
@@ -183,9 +183,9 @@ describe("parser", () => {
 	});
 	it("should handle variable variable assignment with an operator", () => {
 		const tokens = [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" },
 			{ type: "BinaryOperator", value: "+" },
 			{ type: "Number", value: "4" }
@@ -209,9 +209,9 @@ describe("parser", () => {
 	});
 	it("should handle multiple expressions in a line", () => {
 		const tokens = [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" },
 			{ type: "BinaryOperator", value: "+" },
 			{ type: "Number", value: "4" },
@@ -249,14 +249,14 @@ describe("parser", () => {
 	});
 	it("should handle variable multiple expressions", () => {
 		const tokens = [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "6" },
 			{ type: "LineBreak" }
 		];
@@ -284,13 +284,13 @@ describe("parser", () => {
 	});
 	it("should handle variable reassignment", () => {
 		const tokens = [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "33" },
 			{ type: "LineBreak" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "13" }
 		];
 
@@ -321,15 +321,18 @@ describe("parser", () => {
 		expect(parser(tokens)).toEqual({
 			type: "Program",
 			statements: [
-				{ type: "DefaultExport", value: { type: "Number", value: "5" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Number", value: "5" }
+				}
 			]
 		});
 	});
 	it("should handle dangling identifiers and number", () => {
 		const tokens = [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" },
 			{ type: "LineBreak" },
 			{ type: "Number", value: "1" },
@@ -440,9 +443,9 @@ const fullTransformSnippets = [
 		code: `let a = 5
 	export default a`,
 		tokens: [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "5" },
 			{ type: "LineBreak" },
 			{ type: "DefaultExport" },
@@ -459,7 +462,10 @@ const fullTransformSnippets = [
 						value: "5"
 					}
 				},
-				{ type: "DefaultExport", value: { type: "Identifier", value: "a" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Identifier", value: "a" }
+				}
 			]
 		},
 		transformedAST: {
@@ -473,7 +479,10 @@ const fullTransformSnippets = [
 						value: "5"
 					}
 				},
-				{ type: "DefaultExport", value: { type: "Identifier", value: "a" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Identifier", value: "a" }
+				}
 			]
 		},
 		generatedCode: `let a = 5
@@ -486,13 +495,19 @@ export default a`
 		AST: {
 			type: "Program",
 			statements: [
-				{ type: "DefaultExport", value: { type: "Number", value: "7" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Number", value: "7" }
+				}
 			]
 		},
 		transformedAST: {
 			type: "Program",
 			statements: [
-				{ type: "DefaultExport", value: { type: "Number", value: "7" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Number", value: "7" }
+				}
 			]
 		},
 		generatedCode: `export default 7`
@@ -502,9 +517,9 @@ export default a`
 		code: `let a = 52
 export default 112`,
 		tokens: [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "52" },
 			{ type: "LineBreak" },
 			{ type: "DefaultExport" },
@@ -521,13 +536,19 @@ export default 112`,
 						value: "52"
 					}
 				},
-				{ type: "DefaultExport", value: { type: "Number", value: "112" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Number", value: "112" }
+				}
 			]
 		},
 		transformedAST: {
 			type: "Program",
 			statements: [
-				{ type: "DefaultExport", value: { type: "Number", value: "112" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Number", value: "112" }
+				}
 			]
 		},
 		generatedCode: `export default 112`
@@ -538,14 +559,14 @@ export default 112`,
 	let b = 999
 	export default b`,
 		tokens: [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "11" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "999" },
 			{ type: "LineBreak" },
 			{ type: "DefaultExport" },
@@ -570,7 +591,10 @@ export default 112`,
 						value: "999"
 					}
 				},
-				{ type: "DefaultExport", value: { type: "Identifier", value: "b" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Identifier", value: "b" }
+				}
 			]
 		},
 		transformedAST: {
@@ -584,7 +608,10 @@ export default 112`,
 						value: "999"
 					}
 				},
-				{ type: "DefaultExport", value: { type: "Identifier", value: "b" } }
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Identifier", value: "b" }
+				}
 			]
 		},
 		generatedCode: `let b = 999
@@ -596,14 +623,14 @@ export default b`
 	let b = 999
 	export default a + b`,
 		tokens: [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "11" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "999" },
 			{ type: "LineBreak" },
 			{ type: "DefaultExport" },
@@ -631,7 +658,7 @@ export default b`
 					}
 				},
 				{
-					type: "DefaultExport",
+					type: "DefaultExportExpression",
 					value: {
 						type: "BinaryExpression",
 						operator: "+",
@@ -661,7 +688,7 @@ export default b`
 					}
 				},
 				{
-					type: "DefaultExport",
+					type: "DefaultExportExpression",
 					value: {
 						type: "BinaryExpression",
 						operator: "+",
@@ -681,14 +708,14 @@ export default a + b`
 	let b = a
 	export default b`,
 		tokens: [
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Number", value: "1337" },
 			{ type: "LineBreak" },
-			{ type: "VariableDeclaration" },
+			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "b" },
-			{ type: "VariableAssignment" },
+			{ type: "VariableAssignmentOperator" },
 			{ type: "Identifier", value: "a" },
 			{ type: "LineBreak" },
 			{ type: "DefaultExport" },
@@ -711,7 +738,7 @@ export default a + b`
 					value: { type: "Identifier", value: "a" }
 				},
 				{
-					type: "DefaultExport",
+					type: "DefaultExportExpression",
 					value: { type: "Identifier", value: "b" }
 				}
 			]
@@ -733,7 +760,7 @@ export default a + b`
 					value: { type: "Identifier", value: "a" }
 				},
 				{
-					type: "DefaultExport",
+					type: "DefaultExportExpression",
 					value: { type: "Identifier", value: "b" }
 				}
 			]

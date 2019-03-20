@@ -6,7 +6,7 @@ const tokenShapes = [
 		matchPattern: `export default`
 	},
 	{
-		type: "VariableDeclaration",
+		type: "VariableDeclarator",
 		matchPattern: "let[^a-zA-Z0-9]"
 	},
 	{
@@ -15,7 +15,7 @@ const tokenShapes = [
 		getValue: code => code
 	},
 	{
-		type: "VariableAssignment",
+		type: "VariableAssignmentOperator",
 		matchPattern: "="
 	},
 	{ type: "Number", matchPattern: `\\d+`, getValue: code => code },
@@ -72,7 +72,7 @@ const parseExpression = tokens => {
 	const right = parseExpression(tokens);
 	if (operator.type === "BinaryOperator") {
 		return { type: "BinaryExpression", operator: operator.value, left, right };
-	} else if (operator.type === "VariableAssignment") {
+	} else if (operator.type === "VariableAssignmentOperator") {
 		return {
 			type: "VariableAssignment",
 			id: left,
@@ -106,7 +106,7 @@ const parser = tokensArray => {
 		count++;
 		let token = tokensArray.shift();
 		switch (token.type) {
-			case "VariableDeclaration": {
+			case "VariableDeclarator": {
 				const id = tokensArray.shift();
 				// remove our dumb variableAssignment token
 				tokensArray.shift();
@@ -134,16 +134,13 @@ const parser = tokensArray => {
 				break;
 			}
 			case "Identifier": {
-				if (tokensArray[0] && tokensArray[0].type === "BinaryOperator") {
-					let expressionTokens = getTokensBeforeBreak(tokensArray);
-					AST.statements.push(parseExpression([token, ...expressionTokens]));
-				} else if (
+				if (
 					tokensArray[0] &&
-					tokensArray[0].type === "VariableAssignment"
+					(tokensArray[0].type === "BinaryOperator" ||
+						tokensArray[0].type === "VariableAssignmentOperator")
 				) {
 					let expressionTokens = getTokensBeforeBreak(tokensArray);
 					AST.statements.push(parseExpression([token, ...expressionTokens]));
-					// In this instance, we need to add a VariableAssignment node
 				} else {
 					AST.statements.push(token);
 				}
@@ -152,7 +149,7 @@ const parser = tokensArray => {
 			case "DefaultExport": {
 				let expressionTokens = getTokensBeforeBreak(tokensArray);
 				AST.statements.push({
-					type: "DefaultExport",
+					type: "DefaultExportExpression",
 					value: parseExpression(expressionTokens)
 				});
 				break;
@@ -187,7 +184,7 @@ identifierUsedInNode = (identifier, node) => {
 				identifierUsedInNode(identifier, node.right)
 			);
 		}
-		case "DefaultExport": {
+		case "DefaultExportExpression": {
 			return identifierUsedInNode(identifier, node.value);
 		}
 		case "Number": {
@@ -253,7 +250,7 @@ const generateStatement = statement => {
 				statement.operator
 			} ${generateStatement(statement.right)}`;
 		}
-		case "DefaultExport": {
+		case "DefaultExportExpression": {
 			return `export default ${generateStatement(statement.value)}`;
 		}
 		default: {

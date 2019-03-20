@@ -1,5 +1,3 @@
-// This is copied from the readme
-
 const tokenizer = code => {
 	/* ... */
 	return []; // an array of tokens in processed order
