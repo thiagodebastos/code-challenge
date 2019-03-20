@@ -4,55 +4,83 @@ This challenge is going to see us build our own compiler (transpiler), and learn
 
 To do this, you will need to understand the steps that a transpiler goes through as it does its work.
 
-You are not allowed to use any node modules (other than jest).
-
 ## Your Mission, if you choose to accept it:
 
 Expand out the `transpiler.example.js`'s functions to pass the test suite found in `transpiler.tests.js`.
 
-To do this, you will need to understand the steps that a transpiler goes through as it does its work.
-
 You can write your tests in any order, however it is likely helpful to understand tokens before you write your parser.
+
+You are not allowed to use any node modules (other than jest).
 
 ## What is a Transpiler?
 
-A transpiler is software that takes in code from one language, and outputs it in the same language, converts it to an Abstract Syntax Tree, and then converts it back to the same language. Tranpilers are useful to perform transformations on code without doing a full language switch. For us JS developers, babel and everything we get it to do is why transpilers matter to us.
+A transpiler is software that takes in code from one language, converts it to an Abstract Syntax Tree (AST), and then converts
+it back to the same language. Tranpilers are useful to perform transformations on code without doing a full language switch.
+For us JS developers, babel and everything we get it to do is why transpilers matter to us.
 
 ## How does a transpiler work?
 
-A transpiler works by going through several different steps, designed at breaking the raw text version
-of your code, and then reconfiguring it. The conversion steps look like:
+A transpiler performs a series of transforms, to go from raw code to raw code. The conversion steps look like:
 
 ```
-tokenizer(raw_code) => tokens_array
-parser(tokens_array) => abstract_syntax_tree (AST)
-transformer(AST) => modified_AST
-generator(AST) => code
+tokenizer(raw_code) => tokens
+parser(tokens) => AST
+transformer(AST) => AST
+generator(AST) => raw_code
 ```
 
-### What is a token?
+### Tokenizing
 
-A token is an object that represents a discrete unit in your code, such as:
+Tokenizing is the process of converting raw code into tokens. A token is an object that represents a discrete unit
+in your code, such as:
 
 ```js
-{ type: "LineBreak" }
+{ type 'Number', value: '7' }
 ```
 
 Every token has a type. This is used by later processes to decide what to do with the token. In addition, some
-tokens have values, which are a string, and hold some information from the source code, for example:
+tokens have values, which are a string, and hold some information from the source code. An example of tokenizing
+would be taking the code snippet:
 
 ```js
-{ type: "Number", value: "7" }
+a = 7
 ```
 
-Each challenge explains the tokens that it needs.
+And transforming it into the list of tokens:
 
-### What is an AST?
+```js
+[
+  { type 'Identifier', value: 'a' },
+  { type: 'VariableAssignmentOperator' },
+  { type: "Number", value: "7" }
+]
+```
+
+### Parsing
 
 An Abstract Syntax Tree (AST) is a tree representation of your code, that goes further than tokens as it contains
 informations about how tokens relate to one another.
 
 This can be seen from something such as this variable declaration in an AST:
+
+if you start with the code
+
+```js
+let a = 7
+```
+
+You would get the tokens
+
+```js
+[
+  { type: 'VariableDeclarator' },
+  { type 'Identifier', value: 'a' },
+  { type: 'VariableAssignmentOperator' },
+  { type: "Number", value: "7" }
+]
+```
+
+This would then be parsed into the the following node in an AST
 
 ```js
 {
@@ -60,12 +88,64 @@ This can be seen from something such as this variable declaration in an AST:
   id: { type: "Identifier", value: "a" },
   initialValue: {
     type: "Number",
-    value: "5"
+    value: "7"
   }
 }
 ```
 
 An AST is built from tokens, not code directly, however can be used to convert back into code.
+
+### Transforming
+
+In transformation, the goal is to use information from the AST to return a modified AST.
+
+For example, if you wanted a transformation to capitalise all variables, you would be
+passed the node:
+
+```js
+{
+  type: "VariableDeclaration",
+  id: { type: "Identifier", value: "a" },
+  initialValue: {
+    type: "Number",
+    value: "7"
+  }
+}
+```
+
+and return the node:
+
+```js
+{
+  type: "VariableDeclaration",
+  id: { type: "Identifier", value: "A" },
+  initialValue: {
+    type: "Number",
+    value: "7"
+  }
+}
+```
+
+### Generating
+
+In the generation step, you need to convert an AST into code. For example, you could convert
+
+```js
+{
+  type: "VariableDeclaration",
+  id: { type: "Identifier", value: "A" },
+  initialValue: {
+    type: "Number",
+    value: "7"
+  }
+}
+```
+
+into the code:
+
+```js
+let A = 7
+```
 
 ## Challenge 1 - initial set of tokens
 
@@ -74,29 +154,17 @@ For the first challenge, our goal is to remove unused variables. For example, in
 ```js
 let a = 5
 let b = a
-
 export default a;
 ```
 
-The variable b is never used and could be removed.
-
-On a more complicated example:
+The variable b is never used and could be removed, leaving us with the code:
 
 ```js
 let a = 5
-let b = a
-
-export default b;
+export default a
 ```
 
-here since the variables are just pointing to each other, we can reduce the code to:
-
-// @timl is this a bad idea?
-```js
-let a = 5
-
-export default a;
-```
+An unused variable is defined as a variable not used in the code after its declaration.
 
 For this first part we are using a very reduced set of javascript that includes:
 
@@ -104,38 +172,31 @@ For this first part we are using a very reduced set of javascript that includes:
 - `numbers` and `identifiers` (variable names) as the only values/data types
 - Basic math operators (`+`, `-`, `*`) as the only kinds of operation (no functions yet)
 
-A good approach to this is to look at the tests required for each of the parts of the transpilation,
-and write one function at a time, before testing the full `generator` function.
-
-Tokens you will need to be able to recognise + create:
-
-### Value tokens
-`Number`: A collection of numeric characters. A value type.
-`Identifier`: A collection of alphabetic characters. A value type.
-
-### Expression tokens
-`VariableAssignment`: The `=` symbol. Must be preceded by an identifier.
-`BinaryOperator`: A symbol used to denote a BinaryExpression in an AST. Valid operators are `+`, `-` and `*`. During tokenization, there are not rules on what precedes or follows this token.
-
-### Other tokens
-`LineBreak`: The `\n` symbol. A linebreak is an expression terminator.
-`VariableDeclaration`: For this challenge, all identifiers are `let`.
 
 ## Formal grammar definition
 
-`VariableDeclarator`:: `let`
-`Identifier`:: alphabetic characters
-`Number`:: numeric characters
-`DefaultExport`:: `export default`
-`VariableAssignmentOperator`:: `=`
-`BinaryOperator`:: `+` | `-` | `*`
-`LineBreak`:: `\n`
-`VariableDeclaration`:: VariableDeclarator : Identifier : OperationalExpression
+Note that while all these exist as concepts, not all directly translate to a token type or
+an AST node type.
+
+```
+`Program`:: [Statement]
+`Statement`:: Expression
+`Expression`:: AssignmentExpression | OperationalExpression
+`AssignmentExpression`:: DefaultExportExpression | VariableDeclaration | VariableAssignment
 `OperationalExpression`:: Value | BinaryExpression
+`DefaultExportExpression`:: DefaultExport : OperationalExpression
+`VariableDeclaration`:: VariableDeclarator : Identifier : OperationalExpression
+`VariableAssignment`:: Identifer : VariableAssignmentOperator : OperationalExpression
 `Value`:: Number | Identifier
 `BinaryExpression`:: OperationalExpression : BinaryOperator : Value
-`DefaultExportExpression`:: DefaultExport : OperationalExpression
-`VariableAssignment`:: Identifer : VariableAssignmentOperator : OperationalExpression
+`DefaultExport`:: "export default"
+`VariableDeclarator`:: "let"
+`Identifier`:: alphabetic characters
+`Number`:: numeric characters
+`VariableAssignmentOperator`:: "="
+`BinaryOperator`:: "+" | "-" | "*"
+`LineBreak`:: "\n"
+```
 
 ## Other Resources
 

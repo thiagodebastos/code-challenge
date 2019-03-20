@@ -768,14 +768,10 @@ export default a + b`
 		generatedCode: `let a = 1337
 let b = a
 export default b`
-	}
-];
-
-const fullTransformSnippetsLies = [
-	`let a = 1337
-let b = a
-export default a`,
-	`let a = 1
+	},
+	{
+		name: "with a large number of variables declared",
+		code: `let a = 1
 let b = 2
 let c = 3
 let d = 4
@@ -787,6 +783,429 @@ let j = 9
 let k = 10
 let z = a - b * j
 export default z + e`,
+		tokens: [
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "a" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "1" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "b" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "2" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "c" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "3" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "d" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "4" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "e" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "5" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "f" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "6" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "h" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "7" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "i" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "8" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "j" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "9" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "k" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "10" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "z" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "a" },
+			{ type: "BinaryOperator", value: "-" },
+			{ type: "Identifier", value: "b" },
+			{ type: "BinaryOperator", value: "*" },
+			{ type: "Identifier", value: "j" },
+			{ type: "LineBreak" },
+			{ type: "DefaultExport" },
+			{ type: "Identifier", value: "z" },
+			{ type: "BinaryOperator", value: "+" },
+			{ type: "Identifier", value: "e" }
+		],
+		AST: {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: { type: "Number", value: "1" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "b" },
+					value: { type: "Number", value: "2" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "c" },
+					value: { type: "Number", value: "3" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "d" },
+					value: { type: "Number", value: "4" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "e" },
+					value: { type: "Number", value: "5" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "f" },
+					value: { type: "Number", value: "6" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "h" },
+					value: { type: "Number", value: "7" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "i" },
+					value: { type: "Number", value: "8" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "j" },
+					value: { type: "Number", value: "9" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "k" },
+					value: { type: "Number", value: "10" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "z" },
+					value: {
+						type: "BinaryExpression",
+						operator: "-",
+						left: { type: "Identifier", value: "a" },
+						right: {
+							type: "BinaryExpression",
+							operator: "*",
+							left: { type: "Identifier", value: "b" },
+							right: { type: "Identifier", value: "j" }
+						}
+					}
+				},
+				{
+					type: "DefaultExportExpression",
+					value: {
+						type: "BinaryExpression",
+						operator: "+",
+						left: { type: "Identifier", value: "z" },
+						right: { type: "Identifier", value: "e" }
+					}
+				}
+			]
+		},
+		transformedAST: {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: { type: "Number", value: "1" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "b" },
+					value: { type: "Number", value: "2" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "e" },
+					value: { type: "Number", value: "5" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "j" },
+					value: { type: "Number", value: "9" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "z" },
+					value: {
+						type: "BinaryExpression",
+						operator: "-",
+						left: { type: "Identifier", value: "a" },
+						right: {
+							type: "BinaryExpression",
+							operator: "*",
+							left: { type: "Identifier", value: "b" },
+							right: { type: "Identifier", value: "j" }
+						}
+					}
+				},
+				{
+					type: "DefaultExportExpression",
+					value: {
+						type: "BinaryExpression",
+						operator: "+",
+						left: { type: "Identifier", value: "z" },
+						right: { type: "Identifier", value: "e" }
+					}
+				}
+			]
+		},
+		generatedCode: `let a = 1
+let b = 2
+let e = 5
+let j = 9
+let z = a - b * j
+export default z + e`
+	},
+	{
+		name: "second long transform check",
+		code: `let a = 1
+let b = a
+let c = b
+let d = c
+let e = d
+let f = e
+let h = f
+let i = f
+let j = 9
+let k = 10
+let z = a * a * h
+export default z`,
+		tokens: [
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "a" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "1" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "b" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "a" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "c" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "b" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "d" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "c" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "e" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "d" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "f" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "e" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "h" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "f" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "i" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "f" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "j" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "9" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "k" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Number", value: "10" },
+			{ type: "LineBreak" },
+			{ type: "VariableDeclarator" },
+			{ type: "Identifier", value: "z" },
+			{ type: "VariableAssignmentOperator" },
+			{ type: "Identifier", value: "a" },
+			{ type: "BinaryOperator", value: "*" },
+			{ type: "Identifier", value: "a" },
+			{ type: "BinaryOperator", value: "*" },
+			{ type: "Identifier", value: "h" },
+			{ type: "LineBreak" },
+			{ type: "DefaultExport" },
+			{ type: "Identifier", value: "z" }
+		],
+		AST: {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: { type: "Number", value: "1" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "b" },
+					value: { type: "Identifier", value: "a" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "c" },
+					value: { type: "Identifier", value: "b" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "d" },
+					value: { type: "Identifier", value: "c" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "e" },
+					value: { type: "Identifier", value: "d" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "f" },
+					value: { type: "Identifier", value: "e" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "h" },
+					value: { type: "Identifier", value: "f" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "i" },
+					value: { type: "Identifier", value: "f" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "j" },
+					value: { type: "Number", value: "9" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "k" },
+					value: { type: "Number", value: "10" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "z" },
+					value: {
+						type: "BinaryExpression",
+						operator: "*",
+						left: { type: "Identifier", value: "a" },
+						right: {
+							type: "BinaryExpression",
+							operator: "*",
+							left: { type: "Identifier", value: "a" },
+							right: { type: "Identifier", value: "h" }
+						}
+					}
+				},
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Identifier", value: "z" }
+				}
+			]
+		},
+		transformedAST: {
+			type: "Program",
+			statements: [
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "a" },
+					value: { type: "Number", value: "1" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "b" },
+					value: { type: "Identifier", value: "a" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "c" },
+					value: { type: "Identifier", value: "b" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "d" },
+					value: { type: "Identifier", value: "c" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "e" },
+					value: { type: "Identifier", value: "d" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "f" },
+					value: { type: "Identifier", value: "e" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "h" },
+					value: { type: "Identifier", value: "f" }
+				},
+				{
+					type: "VariableDeclaration",
+					id: { type: "Identifier", value: "z" },
+					value: {
+						type: "BinaryExpression",
+						operator: "*",
+						left: { type: "Identifier", value: "a" },
+						right: {
+							type: "BinaryExpression",
+							operator: "*",
+							left: { type: "Identifier", value: "a" },
+							right: { type: "Identifier", value: "h" }
+						}
+					}
+				},
+				{
+					type: "DefaultExportExpression",
+					value: { type: "Identifier", value: "z" }
+				}
+			]
+		},
+		generatedCode: `let a = 1
+let b = a
+let c = b
+let d = c
+let e = d
+let f = e
+let h = f
+let z = a * a * h
+export default z`
+	}
+];
+
+const fullTransformSnippetsLies = [
 	`let a = 1
 let b = a
 let c = b
@@ -806,10 +1225,12 @@ describe("Integrationish Tests", () => {
 		describe(testCase.name, () => {
 			it("tokenizer", () => {
 				const tokens = tokenizer(testCase.code);
+
 				expect(tokens).toEqual(testCase.tokens);
 			});
 			it("parser", () => {
 				const AST = parser(testCase.tokens);
+
 				expect(AST).toEqual(testCase.AST);
 			});
 			it("transformer", () => {
