@@ -7,59 +7,37 @@
   BinaryOperator:: "+" | "-" | "*"
   LineBreak:: "\n"
 */
+import Transpiler, {
+    RawCode,
+    Token,
+    AST,
+    Tokenizer,
+    Transformer,
+    Parser,
+    Generator
+} from "./types";
 
-type DefaultExport = 'export default';
-type VariableDeclarator = 'let';
-type Identifier = string;
-type NumberToken = number;
-type VariableAssignmentOperator = '=';
-type BinaryOperator = '+' | '-' | '*';
-type LineBreak = '\n';
 
-type RawCode = 'string';
-
-interface Token {
-    id: any;
-    type:
-    | DefaultExport
-    | VariableDeclarator
-    | Identifier
-    | NumberToken
-    | VariableAssignmentOperator
-    | BinaryOperator
-    | LineBreak;
-    value: string;
-}
-
-interface AST {
-    Node: [Token];
-}
-
-// interface Parser {
-//
-// }
-
-interface Transpiler {
-    Tokenizer: (code: string) => [Token] | string;
-}
-
-// Parsing 1: Lexical Analysis
-const tokenizer: Transpiler['Tokenizer'] = code => {
-    return ""; // an array  tokens in processed order
+/* Parsing 1: Lexical Analysis */
+const tokenizer: Tokenizer = (code: string = ""): [Token] | [] => {
+    if(code === "") return [];
+    const tokenizedCode: Token = {
+        id: "something",
+        type: "Identifier",
+        value: "something"
+    }
+    return [tokenizedCode]; // an array  tokens in processed order
 };
 
-// Parsing 2: Syntatic Analysis
+/* Parsing 2: Syntatic Analysis */
 const parser = (tokens: any) => {
-    /* ... */
-    return {}; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
+    return { ...tokens };
 };
-const transformer = (AST: any) => {
-    /* ... */
+const transformer = (ast: any) => {
     return {}; // a modified AST
 };
 
-const generator = (AST: any) => {
-    /* ... */
+const generator = (AST: any): string => {
     return ``; // a string that is code
 };
 
