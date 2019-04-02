@@ -9,7 +9,7 @@ export interface RawToken {
     end: number;
 }
 
-interface ScannerState {
+interface LexerState {
     index: number;
     lineNumber: number;
     lineStart: number;
@@ -36,7 +36,7 @@ export class Scanner {
         this.lineStart = 0;
     }
 
-    public saveState(): ScannerState {
+    public saveState(): LexerState {
         return {
             index: this.index,
             lineNumber: this.lineNumber,
@@ -44,7 +44,7 @@ export class Scanner {
         }
     }
 
-    public restoreState(state: ScannerState): void {
+    public restoreState(state: LexerState): void {
         this.index = state.index;
         this.lineNumber = state.lineNumber;
         this.lineStart= state.lineStart;
