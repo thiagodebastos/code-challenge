@@ -3,8 +3,8 @@
  * within the code string would later help with error reporting and source mapping
  * */
 export interface TextRange {
-	pos: number;
-	end: number;
+    pos: number;
+    end: number;
 }
 
 
@@ -15,13 +15,13 @@ type MinusToken = "-"
 type AsterixToken = "*"
 
 export const enum SyntaxKind {
-	LetKeyword
+    LetKeyword
 }
 
 export type DefaultExport = "export default";
 export type VariableDeclarator = LetKeyword;
 export type Identifier = string;
-export type NumberToken = number;
+export type NumberToken = string;
 export type VariableAssignmentOperator = "=";
 export type BinaryOperator = "+" | "-" | "*";
 export type LineBreak = "\n";
@@ -42,22 +42,22 @@ export interface Token {
 }
 
 interface Node {
-  type: "VariableDeclaration",
-  id: { type: Identifier, value: string | number },
-  initialValue: {
-    type: "Number",
-    value: "7"
-  }
+    type: "VariableDeclaration",
+    id: { type: Identifier, value: string | number },
+    initialValue: {
+        type: "Number",
+        value: "7"
+    }
 }
 
 export interface AST {
     Node: [Token];
 }
 
-export type Tokenizer = (code: RawCode) => [Token] | [];
-export type Parser = (tokens: Token[] | []) => AST;
-export type Transformer = (ast: AST) => AST;
-export type Generator = (ast: AST) => string;
+export type Tokenizer = ( code: RawCode ) => [Token] | [];
+export type Parser = ( tokens: Token[] | [] ) => AST;
+export type Transformer = ( ast: AST ) => AST;
+export type Generator = ( ast: AST ) => string;
 
 export default interface Transpiler {
     Tokenizer: Tokenizer;
